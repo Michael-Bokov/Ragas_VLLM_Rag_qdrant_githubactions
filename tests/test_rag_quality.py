@@ -36,11 +36,11 @@ def MY_llm():
     # #     base_url=VLLM_URL,
     # #     api_key="EMPTY",
     # # )
-    #     api_key="AQVNy849xPo2rksyO6VesSCidTA2dSJyIhTtAT2K",
+    
     #     base_url="https://llm.api.cloud.yandex.net/v1",
     #     default_headers={
-    #         "Authorization": "ajebpous9uhmlp5j4et5",
-    #         "OpenAI-Project": "gpt://ajec270584uftr6tccgq/yandexgpt-lite"}
+    #         "Authorization": "",
+    #         "OpenAI-Project": "gpt://atccgq/yandexgpt-lite"}
     #     )
 
     # client = OpenAI(base_url=VLLM_URL, api_key="EMPTY")
