@@ -1,0 +1,8 @@
+.pytest_cache
+hf_models
+gdrant_storage
+tests/__pycache__
+tests/.pytest_cache
+tests/g.json
+tests/t.py
+venv

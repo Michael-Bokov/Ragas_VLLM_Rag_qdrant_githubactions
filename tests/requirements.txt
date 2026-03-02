@@ -1,0 +1,6 @@
+ragas 
+requests
+datasets
+langchain-huggingface 
+langchain-openai 
+pytest

@@ -1,0 +1,74 @@
+#version: '3.8'
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.10.1
+    container_name: qdrant
+    ports:
+      - "6333:6333"  # REST API
+      - "6334:6334"  # GRPC
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: unless-stopped
+
+  vllm:
+    image: vllm/vllm-openai:v0.6.0
+    container_name: vllm
+    runtime: nvidia
+    #environment:
+      #- HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}  # опционально, для gated моделей
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface  # кэш моделей
+    ports:
+      - "8000:8000"
+    command:
+      - "--model"
+      - "ModelCloud/Meta-Llama-3.1-8B-Instruct-gptq-4bit"
+      - "--quantization"
+      - "gptq"
+      - "--dtype"
+      - "float16"
+      - "--max-model-len"
+      - "6144"            # максимальная длина контекста (подберите под свои задачи)
+      - "--gpu-memory-utilization"
+      - "0.8"              # использование 90% VRAM
+      - "--port"
+      - "8000"
+      - "--host"
+      - "0.0.0.0"
+      - "--guided-decoding-backend"
+      - "outlines"  # Включаем поддержку guided decoding
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  rag-app:
+    build: ./app
+    container_name: rag-app
+    depends_on:
+      - qdrant
+      - vllm
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docs:/app/docs          # монтируем папку с документами
+      - ./app/indexer.py:/app/indexer.py  # для удобства разработки
+      - ./hf_models:/app/models_cache
+      - ./app/main.py:/app/main.py
+    environment:
+      - HF_HOME=/app/models_cache
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - VLLM_HOST=vllm
+      - VLLM_PORT=8000
+      - COLLECTION_NAME=my_docs
+      - EMBEDDING_MODEL=BAAI/bge-m3   # модель для эмбеддингов (через sentence-transformers)
+    command: >
+      sh -c "python indexer.py && uvicorn main:app --host 0.0.0.0 --port 80"
+    restart: unless-stopped

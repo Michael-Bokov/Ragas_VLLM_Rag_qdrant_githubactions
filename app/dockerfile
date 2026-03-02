@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Устанавливаем системные зависимости (нужны для некоторых библиотек)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+
+# Устанавливаем зависимости ОДНИМ слоем
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Проверка: выведем список пакетов при сборке, чтобы убедиться
+RUN pip show qdrant-client
+
+CMD ["sh", "-c", "python indexer.py && uvicorn main:app --host 0.0.0.0 --port 80"]

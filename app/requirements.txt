@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sentence-transformers
+qdrant_client==1.9.1
+openai
+python-multipart
+
+
+#pypdf  # для чтения PDF
+#python-docx  # для DOCX
