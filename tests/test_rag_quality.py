@@ -7,6 +7,8 @@ from ragas.embeddings import LangchainEmbeddingsWrapper
 from ragas.metrics._faithfulness import faithfulness
 from ragas.metrics._answer_relevance import answer_relevancy
 from ragas.metrics._context_recall import context_recall
+from ragas.metrics._context_precision import context_precision
+from ragas.metrics._answer_correctness import answer_correctness
 from langchain_huggingface import HuggingFaceEmbeddings as RagasHFEmbeddings
 from datasets import Dataset
 from langchain_openai import ChatOpenAI # Ragas дружит с этим форматом
@@ -116,7 +118,7 @@ def test_rag_quality(MY_llm,MY_embeddings):
     # 4. Оценка (LLM-as-a-Judge)
     result = evaluate(
         dataset,
-        metrics=[faithfulness,context_recall,answer_relevancy,], #  answer_relevancy, 
+        metrics=[faithfulness,context_recall,answer_relevancy,context_precision,answer_correctness], #  answer_relevancy, 
         llm=MY_llm,
         embeddings=MY_embeddings,
     #     column_map={
@@ -144,7 +146,7 @@ def test_rag_quality(MY_llm,MY_embeddings):
         print(f"  {metric}: {value:.4f}")
     #mean_scores = df.mean().to_dict()
     #print(f"Ragas Scores: {mean_scores}")
-    print(result.to_pandas()[["faithfulness",  "context_recall","answer_relevancy"]]) #"answer_relevancy",
+    print(result.to_pandas()[["faithfulness",  "context_recall","answer_relevancy","context_precision","answer_correctness"]]) #"answer_relevancy",
     assert mean_scores["faithfulness"] > 0.6, f"Галлюцинации выше порога! Score: {mean_scores['faithfulness']:.3f} (нужно > 0.7)"
     assert mean_scores["context_recall"] > 0.6, f" Полнота контекста недостаточна: {mean_scores['context_recall']:.3f} (нужно > 0.6)"
     #assert mean_scores["answer_relevancy"] > 0.8, f"Релевантность низкая! Score: {mean_scores['answer_relevancy']:.3f} (нужно > 0.8)"
